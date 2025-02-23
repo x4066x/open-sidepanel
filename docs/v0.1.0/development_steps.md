@@ -93,50 +93,152 @@ graph TD
   - `chrome.runtime.sendMessage`の実装
   - 基本的なレスポンス処理
 
-### PBI-004: エラーハンドリングとメッセージ永続化
-**目的**: 安定性とユーザー体験の向上
-```mermaid
-graph TD
-    A[エラーバウンダリー] --> B[ストレージ管理]
-    B --> C[メッセージ履歴]
-```
-**主なタスク**:
-- エラーハンドリングの実装
-  - エラーバウンダリーの設定
-  - エラーメッセージのUI
-  - 再試行メカニズム
-- メッセージ永続化
-  - `chrome.storage`の実装
-  - 履歴の保存と読み込み
-  - 履歴クリア機能
-- UIの改善
-  - タイピング中の表示
-  - 既読状態の管理
-  - スクロール位置の保持
+### PBI-004: チャットインターフェース実装
+**目的**: OpenAI APIを使用したチャットインターフェースの実装
+
+**実装手順**:
+
+1. 型定義の追加（`src/types/`）
+   - `message.ts`の拡張
+     - `ChatMessage`インターフェースの実装
+     - `Message`型の拡張
+     - `MessageResponse`型の更新
+
+2. WebAPI実装（`src/core/providers/`）
+   - `openai.ts`の作成
+     ```typescript
+     // OpenAIクライアントの初期化と型定義
+     export interface ChatCompletionRequest { ... }
+     export interface ChatCompletionResponse { ... }
+     export async function createChatCompletion() { ... }
+     ```
+
+3. ビジネスロジックの実装（`src/core/services/`）
+   - `openaiService.ts`の作成
+     ```typescript
+     // OpenAI APIを使用するサービス層
+     export async function processMessage(message: Message): Promise<MessageResponse> { ... }
+     ```
+
+4. UIコンポーネントの実装（`src/features/`）
+   - `Chat.tsx`の更新
+     ```typescript
+     // チャットインターフェースコンポーネント
+     export const Chat: React.FC = () => {
+       const [messages, setMessages] = useState<ChatMessage[]>([]);
+       const generateUniqueId = () => { ... };
+       // メッセージ処理ロジック
+     };
+     ```
+
+5. エントリーポイントの更新（`entrypoints/`）
+   - `background.ts`の修正
+     ```typescript
+     // バックグラウンドスクリプトの更新
+     import { processMessage } from '../src/core/services/openaiService';
+     // メッセージハンドラーの実装
+     ```
+
+6. 設定ファイルの更新
+   - `wxt.config.ts`
+     ```typescript
+     export default defineConfig({
+       manifest: {
+         host_permissions: ['https://api.openai.com/*'],
+         // ...
+       },
+       // 環境変数の設定
+     });
+     ```
+   - `.env`の作成（gitignoreに追加）
+     ```env
+     OPENAI_API_KEY=your_api_key_here
+     ```
+
+**実装済み機能**:
+- ✅ 型定義の整備
+  - `ChatMessage`インターフェース
+  - メッセージ処理の型定義
+- ✅ OpenAI APIクライアントの統合
+  - WebAPI実装（`providers/openai.ts`）
+  - サービス層実装（`services/openaiService.ts`）
+- ✅ UIコンポーネントの実装
+  - チャットインターフェース（`features/Chat.tsx`）
+  - メッセージ表示と送信機能
+  - ユニークID生成機能
+
 
 ### PBI-005: AIプロバイダー統合
-**目的**: 実際のAIサービスとの連携
+**目的**: 実際のAIサービスとの連携とAPIキー管理
+
+**変更対象ファイル**:
+1. 型定義
+   - `src/types/provider.ts` - AIプロバイダーインターフェース定義
+   - `src/types/storage.ts` - ストレージ関連の型定義
+
+2. ストレージ実装
+   - `src/core/storage/providerKeyStorage.ts` - プロバイダーごとのAPIキー管理実装
+
+3. UIコンポーネント
+   - `src/components/features/Chat.tsx` - チャットコンポーネントにAPIキー設定UIを統合
+   - `src/components/features/ProviderKeyForm.tsx` - APIキー入力フォームコンポーネント
+
+4. プロバイダー実装
+   - `src/core/providers/base.ts` - 基本プロバイダーインターフェース
+   - `src/core/providers/openai.ts` - OpenAI用プロバイダー実装
+
+**実装ステップ**:
+1. 型定義とインターフェース作成
+2. ストレージ機能の実装
+3. プロバイダーベース実装
+4. UIコンポーネントの統合
+
+### PBI-006: 連続会話機能の実装
+**目的**: チャットの文脈を保持し、より自然な対話を実現する
+
 ```mermaid
-sequenceDiagram
-    participant UI as フロントUI
-    participant SW as サービスワーカー
-    participant API as AIプロバイダー
-    
-    UI->>SW: メッセージ送信
-    SW->>API: APIリクエスト
-    API-->>SW: ストリームレスポンス
-    SW-->>UI: 逐次更新
+graph TD
+    A[メッセージ送信] --> B[会話履歴の保持]
+    B --> C[プロバイダーへの送信]
+    C --> D[レスポンス表示]
+    D --> E[履歴の更新]
 ```
-**主なタスク**:
-- プロバイダーインターフェースの設計
-  - 抽象化レイヤーの作成
-  - 設定スキーマの定義
-  - APIキー管理
-- ストリーミング対応
-  - Server-Sent Eventsの実装
-  - 逐次表示の実装
-  - キャンセル処理
-- 設定画面の実装
-  - プロバイダー選択UI
-  - APIキー設定
-  - モデルパラメーター設定
+
+**変更対象ファイル**:
+1. 型定義の拡張
+   - `src/types/message.ts` - 会話履歴の型定義を拡張
+   - `src/types/provider.ts` - プロバイダーインターフェースに会話履歴サポートを追加
+
+2. ストレージ実装
+   - `src/core/storage/conversationStorage.ts` - 会話履歴の永続化
+
+3. プロバイダー実装の更新
+   - `src/core/providers/base.ts` - 会話履歴サポートの基本実装
+   - `src/core/providers/openai.ts` - OpenAIでの会話履歴の利用
+
+4. UIの拡張
+   - `src/features/Chat.tsx` - 会話履歴の表示と管理
+   - `src/components/features/ConversationControls.tsx` - 会話管理用のUI
+
+**実装ステップ**:
+1. 会話履歴の型定義と永続化
+   - 会話履歴の構造設計
+   - ストレージへの保存と読み込み
+
+2. プロバイダー対応
+   - 会話履歴を含めたメッセージ送信
+   - プロバイダー別の履歴フォーマット
+
+3. UI実装
+   - 会話履歴の表示
+   - 会話の保存と読み込み
+   - 新規会話の開始
+
+4. 機能拡張
+   - 会話のエクスポート/インポート
+   - 会話タイトルの自動生成
+   - 会話の検索と整理
+
+**静的解析要件**:
+- コンポーネント実装前: `npm run ai-code-check analyze-symbol`
+- 会話管理機能: `npm run ai-code-check check-file`

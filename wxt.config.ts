@@ -7,7 +7,7 @@ export default defineConfig({
   manifestVersion: 3,
   modules: ['@wxt-dev/module-react'],
   manifest: {
-    permissions: ['sidePanel', 'windows', 'host_permissions'],
+    permissions: ['sidePanel', 'windows', 'host_permissions', 'storage'],
     host_permissions: [
       'https://api.example.com/*',
       'https://api.openai.com/*'
@@ -24,9 +24,6 @@ export default defineConfig({
     reloadPages: false
     // MEMO: reloadPagesの設定をしないとサイドパネルアイコンが開かないため記入
   },
-  vite: () => defineViteConfig({
-    define: {
-      'process.env.OPENAI_API_KEY': JSON.stringify(process.env.OPENAI_API_KEY)
-    }
-  })
+  // 必要に応じてViteの設定を追加
+  vite: () => defineViteConfig({})
 });
