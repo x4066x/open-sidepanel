@@ -1,8 +1,14 @@
-import { processMessage } from '../src/core/services/openaiService';
+import { processMessage } from '../modules/services/openaiService';
 
 export default defineBackground(() => {
   // 拡張機能起動時にサイドパネルを設定
-  browser.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  browser.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
+    .then(() => {
+      console.log('サイドパネルの自動オープン設定に成功しました。');
+  })
+    .catch((error) => {
+      console.error('サイドパネルの設定に失敗しました:', error);
+  });
 
   // メッセージハンドラーの設定
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {

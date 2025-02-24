@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { sendMessage } from '../../core/services/messageHandler';
+import { sendMessage } from '../../modules/services/messageService';
 
 interface MessageFormProps {
   onMessageSent: (content: string) => void;

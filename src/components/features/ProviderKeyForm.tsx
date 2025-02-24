@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ProviderKeyStorage } from '../../core/storage/providerKeyStorage';
+import { ProviderKeyStorage } from '../../modules/storage/providerKeyStorage';
 
 interface ProviderKeyFormProps {
     providerId: string;
