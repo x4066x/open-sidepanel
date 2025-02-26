@@ -1,5 +1,5 @@
 import { createChatCompletion } from '../providers/openai';
-import { Message, MessageResponse } from '../../types/message';
+import { Message, MessageResponse } from '../types/message';
 
 /**
  * OpenAI APIを使用してメッセージを処理するサービス

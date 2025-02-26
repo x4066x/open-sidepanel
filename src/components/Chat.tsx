@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { MessageForm } from '../components/features/MessageForm';
-import { setupMessageListener } from '../core/services/messageHandler';
-import { ChatMessage } from '../types/message';
-import { AVAILABLE_PROVIDERS } from '../types/provider';
-import { ProviderKeyForm } from '../components/features/ProviderKeyForm';
+import { MessageForm } from './features/MessageForm';
+import { ChatMessage } from '../modules/types/message';
+import { AVAILABLE_PROVIDERS } from '../modules/types/provider';
+import { ProviderKeyForm } from './features/ProviderKeyForm';
 
 export const Chat: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);

@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 // OpenAIクライアントのインスタンスを作成
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true // ブラウザでの使用を許可（開発用）
+  // dangerouslyAllowBrowser: true // ブラウザでの使用を許可（開発用）
 });
 
 export interface ChatCompletionRequest {
