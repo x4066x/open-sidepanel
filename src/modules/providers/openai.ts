@@ -8,6 +8,10 @@ export const openai = new OpenAI({
 
 export interface ChatCompletionRequest {
   content: string;
+  context?: Array<{
+    content: string;
+    role: 'system' | 'user' | 'assistant';
+  }>;
 }
 
 export interface ChatCompletionResponse {
@@ -22,11 +26,15 @@ export interface ChatCompletionResponse {
 export async function createChatCompletion(
   request: ChatCompletionRequest
 ): Promise<ChatCompletionResponse> {
+  const messages = request.context || [];
+
   const completion = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
-    messages: [{ role: 'user', content: request.content }],
+    messages: messages,
     temperature: 0.7,
   });
+
+  console.log('OpenAI response:', completion.choices[0]?.message);
 
   const response = completion.choices[0]?.message?.content;
 

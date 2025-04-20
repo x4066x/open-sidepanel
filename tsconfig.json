@@ -2,6 +2,18 @@
   "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
     "allowImportingTsExtensions": true,
-    "jsx": "react-jsx"
-  }
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "*": ["src/*"]
+    },
+    "sourceMap": true,
+    "declaration": true,
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "noImplicitAny": false,
+    "types": ["wxt/browser", "node"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

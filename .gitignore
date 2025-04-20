@@ -26,5 +26,7 @@ web-ext.config.ts
 *.sw?
 
 # windsurf rules
-.windsurfrules
+.cursor/rules/*
+
+# env
 .env

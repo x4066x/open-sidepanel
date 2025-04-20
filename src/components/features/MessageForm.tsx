@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { sendMessage } from '../../modules/services/messageService';
+import { ChatSession } from '../../modules/types/message';
 
 interface MessageFormProps {
   onMessageSent: (content: string) => void;
   onResponse?: (content: string) => void;
+  currentSession?: ChatSession;
 }
 
-export const MessageForm: React.FC<MessageFormProps> = ({ onMessageSent, onResponse }) => {
+export const MessageForm: React.FC<MessageFormProps> = ({ onMessageSent, onResponse, currentSession }) => {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -16,18 +18,41 @@ export const MessageForm: React.FC<MessageFormProps> = ({ onMessageSent, onRespo
 
     setIsLoading(true);
     try {
+      if (!currentSession) {
+        throw new Error('No active chat session');
+      }
+
+      // まずユーザーメッセージを表示
+      onMessageSent(message.trim());
+
+      // メッセージを送信
       const response = await sendMessage({
         type: 'SEND_MESSAGE',
         content: message.trim(),
+        sessionId: currentSession.id,
       });
 
-      if (response.success) {
-        onMessageSent(message);
-        setMessage('');
-        if (onResponse && response.data) {
-          // レスポンスの文字列を抽出
-          const responseText = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
-          onResponse(responseText);
+      setMessage('');
+
+      // レスポンスの処理
+      if (response.success && onResponse && response.data) {
+        const responseData = response.data;
+        if (typeof responseData === 'string') {
+          try {
+            // JSON文字列の場合はパースを試みる
+            const parsed = JSON.parse(responseData);
+            if ('success' in parsed && 'data' in parsed) {
+              onResponse(parsed.data);
+            } else {
+              onResponse(parsed);
+            }
+          } catch {
+            // パースに失敗した場合はそのまま使用
+            onResponse(responseData);
+          }
+        } else if (responseData && typeof responseData === 'object') {
+          // オブジェクトの場合
+          onResponse('data' in responseData ? responseData.data : JSON.stringify(responseData));
         }
       } else {
         console.error('Failed to send message:', response.error);

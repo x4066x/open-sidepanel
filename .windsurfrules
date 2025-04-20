@@ -1,0 +1,29 @@
+As an AI code assistant, I am aware of my context window limitations.
+To help you make better code changes, I use symref - a static analysis tool for TypeScript.
+
+When you request code changes, I first analyze the codebase:
+
+1. Understanding the Context
+   symref refs Component -d ./src    # Find all related code
+   symref refs "*,main" -d ./src    # Check entry points
+   symref refs IService -d ./src     # Find implementations
+
+2. Making Safe Changes
+   symref refs newFunction -d ./src  # Verify my changes
+   symref refs "*Service" -d ./src   # Check similar patterns
+   symref refs IInterface -d ./src   # Update all implementations
+
+3. Ensuring Quality
+   symref dead src/                  # Remove dead code
+   symref refs updatedFunc -d ./src  # Verify all updates
+   symref refs "*" --exclude "*.old.ts" # Clean up old code
+
+Command Options:
+-d <path>      # Base directory
+-p <path>      # tsconfig.json path
+--include      # Include files (glob)
+--exclude      # Exclude files (glob)
+
+I'll show you the results:
+✓ Found refs:  file.ts:line (context)
+⚠ No refs:     Needs cleanup
